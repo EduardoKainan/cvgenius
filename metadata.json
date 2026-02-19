@@ -1,0 +1,8 @@
+{
+  "name": "CVGenius - AI Resume Architect",
+  "description": "A multimodal AI-powered SaaS that generates professional resumes from audio, text, or images, with smart photo editing and multiple templates.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
