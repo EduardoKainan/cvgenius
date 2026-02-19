@@ -538,7 +538,10 @@ const App: React.FC = () => {
                   {[
                     { id: 'classic', label: 'Clássico', desc: 'Sério e tradicional' },
                     { id: 'modern', label: 'Moderno', desc: 'Minimalista e elegante' },
-                    { id: 'creative', label: 'Criativo', desc: 'Ousado e vibrante' }
+                    { id: 'creative', label: 'Criativo', desc: 'Ousado e vibrante' },
+                    { id: 'minimalist', label: 'Minimalista', desc: 'Limpo e direto' },
+                    { id: 'executive', label: 'Executivo', desc: 'Liderança e impacto' },
+                    { id: 'tech', label: 'Tech', desc: 'Focado em skills' }
                   ].map(tmpl => (
                     <button
                       key={tmpl.id}

@@ -30,7 +30,7 @@ export interface ResumeData {
   length: 'short' | 'full';
 }
 
-export type TemplateType = 'classic' | 'modern' | 'creative';
+export type TemplateType = 'classic' | 'modern' | 'creative' | 'minimalist' | 'executive' | 'tech';
 
 export interface AppState {
   currentStep: number;

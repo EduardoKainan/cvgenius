@@ -209,9 +209,184 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
     </div>
   );
 
+  const renderMinimalist = () => (
+    <div id={containerId} className="bg-white p-16 min-h-[1056px] text-slate-900 max-w-[800px] mx-auto font-light">
+      <header className="text-center border-b border-slate-200 pb-10 mb-10">
+        <h1 className="text-4xl tracking-[0.2em] uppercase mb-3">{fullName}</h1>
+        <p className="text-sm tracking-widest text-slate-500 uppercase mb-6">{jobTitle}</p>
+        <div className="flex justify-center gap-6 text-xs text-slate-400">
+           {contact.email && <span>{contact.email}</span>}
+           {contact.phone && <span>{contact.phone}</span>}
+           {contact.location && <span>{contact.location}</span>}
+        </div>
+      </header>
+
+      <section className="mb-10 text-center max-w-lg mx-auto">
+        <p className="leading-relaxed text-slate-600">{summary}</p>
+      </section>
+
+      <div className="grid grid-cols-1 gap-12">
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-center mb-8 text-slate-400">Experiência</h2>
+          {experiences.map((exp, i) => (
+            <div key={i} className="mb-8 grid grid-cols-4 gap-4">
+               <div className="col-span-1 text-right">
+                  <span className="text-xs font-bold block">{exp.period}</span>
+               </div>
+               <div className="col-span-3 border-l border-slate-100 pl-6">
+                  <h3 className="font-medium text-lg mb-1">{exp.position}</h3>
+                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">{exp.company}</div>
+                  <p className="text-sm text-slate-600">{exp.description}</p>
+               </div>
+            </div>
+          ))}
+        </section>
+
+        <section>
+             <h2 className="text-xs font-bold uppercase tracking-widest text-center mb-8 text-slate-400">Skills & Educação</h2>
+             <div className="flex flex-wrap justify-center gap-3 mb-8">
+                {skills.map((skill, i) => (
+                   <span key={i} className="border rounded-full px-4 py-1 text-xs">{skill}</span>
+                ))}
+             </div>
+             <div className="grid grid-cols-2 gap-4 text-center">
+                {education.map((edu, i) => (
+                   <div key={i}>
+                      <div className="font-medium">{edu.degree}</div>
+                      <div className="text-xs text-slate-500">{edu.institution}</div>
+                   </div>
+                ))}
+             </div>
+        </section>
+      </div>
+    </div>
+  );
+
+  const renderExecutive = () => (
+    <div id={containerId} className="bg-white min-h-[1056px] text-slate-800 max-w-[800px] mx-auto">
+       <header className="bg-slate-800 text-white p-12">
+          <div className="flex justify-between items-end">
+             <div>
+                <h1 className="text-4xl font-serif font-bold mb-2">{fullName}</h1>
+                <p className="text-blue-200 font-medium tracking-wide uppercase text-sm">{jobTitle}</p>
+             </div>
+             <div className="text-right text-sm text-slate-300 leading-relaxed">
+                <div>{contact.email}</div>
+                <div>{contact.phone}</div>
+                <div>{contact.location}</div>
+             </div>
+          </div>
+       </header>
+       <div className="p-12 grid grid-cols-3 gap-10">
+          <div className="col-span-2">
+             <section className="mb-8">
+                <h2 className="font-serif font-bold text-xl text-slate-800 mb-4 border-b-2 border-slate-800 pb-2">Perfil</h2>
+                <p className="text-slate-600 leading-relaxed">{summary}</p>
+             </section>
+             <section>
+                <h2 className="font-serif font-bold text-xl text-slate-800 mb-6 border-b-2 border-slate-800 pb-2">Experiência</h2>
+                {experiences.map((exp, i) => (
+                   <div key={i} className="mb-6">
+                      <div className="flex justify-between items-baseline mb-1">
+                         <h3 className="font-bold text-lg">{exp.position}</h3>
+                         <span className="text-sm font-bold text-slate-500">{exp.period}</span>
+                      </div>
+                      <div className="text-blue-800 font-medium text-sm mb-2">{exp.company}</div>
+                      <p className="text-slate-600 text-sm">{exp.description}</p>
+                   </div>
+                ))}
+             </section>
+          </div>
+          <div className="col-span-1 bg-slate-50 p-6 rounded-lg h-fit">
+              <section className="mb-8">
+                 <h2 className="font-bold uppercase tracking-wider text-sm mb-4 text-slate-800">Educação</h2>
+                 {education.map((edu, i) => (
+                    <div key={i} className="mb-4">
+                       <div className="font-bold text-sm">{edu.degree}</div>
+                       <div className="text-xs text-slate-500">{edu.institution}</div>
+                       <div className="text-xs text-slate-400">{edu.year}</div>
+                    </div>
+                 ))}
+              </section>
+              <section>
+                 <h2 className="font-bold uppercase tracking-wider text-sm mb-4 text-slate-800">Competências</h2>
+                 <div className="flex flex-col gap-2">
+                    {skills.map((skill, i) => (
+                       <span key={i} className="text-sm border-b border-slate-200 pb-1">{skill}</span>
+                    ))}
+                 </div>
+              </section>
+          </div>
+       </div>
+    </div>
+  );
+
+  const renderTech = () => (
+     <div id={containerId} className="bg-slate-900 min-h-[1056px] text-slate-300 font-mono max-w-[800px] mx-auto p-10">
+        <header className="border-b border-green-500/30 pb-8 mb-8 flex justify-between items-start">
+           <div>
+              <h1 className="text-4xl font-bold text-green-400 mb-2">{`{ ${fullName} }`}</h1>
+              <p className="text-xl text-white">{`> ${jobTitle}`}</p>
+           </div>
+           <div className="text-right text-xs text-green-500/80">
+              <div>{contact.email}</div>
+              <div>{contact.location}</div>
+              <div>{contact.phone}</div>
+           </div>
+        </header>
+        
+        <div className="grid grid-cols-12 gap-8">
+           <div className="col-span-8">
+              <section className="mb-8">
+                 <h2 className="text-green-400 font-bold mb-4">/* RESUMO */</h2>
+                 <p className="text-sm leading-relaxed text-slate-400">{summary}</p>
+              </section>
+
+              <section>
+                 <h2 className="text-green-400 font-bold mb-6">/* EXPERIÊNCIA */</h2>
+                 {experiences.map((exp, i) => (
+                    <div key={i} className="mb-8 border-l-2 border-slate-700 pl-4 relative">
+                       <div className="absolute -left-[9px] top-0 w-4 h-4 bg-slate-900 border-2 border-green-500 rounded-full"></div>
+                       <div className="flex justify-between items-center mb-1">
+                          <h3 className="text-white font-bold">{exp.position}</h3>
+                          <span className="text-xs text-green-500">{exp.period}</span>
+                       </div>
+                       <div className="text-sm text-slate-500 mb-2">@ {exp.company}</div>
+                       <p className="text-sm text-slate-400">{exp.description}</p>
+                    </div>
+                 ))}
+              </section>
+           </div>
+           <div className="col-span-4">
+              <section className="mb-8">
+                 <h2 className="text-green-400 font-bold mb-4">/* SKILLS */</h2>
+                 <div className="flex flex-wrap gap-2">
+                    {skills.map((skill, i) => (
+                       <span key={i} className="bg-slate-800 text-green-300 text-xs px-2 py-1 rounded border border-slate-700">{skill}</span>
+                    ))}
+                 </div>
+              </section>
+              <section>
+                 <h2 className="text-green-400 font-bold mb-4">/* EDUCAÇÃO */</h2>
+                  {education.map((edu, i) => (
+                    <div key={i} className="mb-4">
+                       <div className="text-white text-sm">{edu.degree}</div>
+                       <div className="text-xs text-slate-500">{edu.institution}</div>
+                       <div className="text-xs text-slate-600">{edu.year}</div>
+                    </div>
+                 ))}
+              </section>
+           </div>
+        </div>
+     </div>
+  );
+
   switch (template) {
     case 'modern': return renderModern();
     case 'creative': return renderCreative();
+    case 'minimalist': return renderMinimalist();
+    case 'executive': return renderExecutive();
+    case 'tech': return renderTech();
     case 'classic': default: return renderClassic();
   }
 };
