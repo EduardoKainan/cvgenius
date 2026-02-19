@@ -2,7 +2,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ResumeData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Fixed: Strictly following GoogleGenAI guidelines for client initialization
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const RESUME_SCHEMA = {
   type: Type.OBJECT,

@@ -9,20 +9,45 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .resume-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1); }
+        .resume-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15); }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+        
+        /* Container que força o CV de 800px a caber na tela do celular */
+        .cv-viewport {
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .cv-scaler {
+            transform-origin: top center;
+            width: 800px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 840px) {
+            .cv-scaler {
+                /* Calcula a escala baseada na largura da tela (com margem de 32px) */
+                transform: scale(calc((100vw - 32px) / 800));
+            }
+            .cv-viewport {
+                /* Ajusta a altura do container pai para não sobrar buraco branco embaixo devido ao transform */
+                height: calc(1056px * ((100vw - 32px) / 800));
+            }
+        }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.42.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
-    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
     "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4"
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1"
   }
 }
 </script>

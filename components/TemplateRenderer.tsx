@@ -1,7 +1,8 @@
 
+// Fixed: Added missing React import to resolve 'Cannot find namespace React' error
 import React from 'react';
 import { ResumeData, TemplateType } from '../types';
-import { Mail, Phone, MapPin, Linkedin, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 
 interface Props {
   data: ResumeData;
@@ -12,8 +13,11 @@ interface Props {
 const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   const { fullName, jobTitle, summary, experiences, education, skills, contact, photoUrl } = data;
 
+  // Largura fixa de 800px é fundamental para o export e para a escala responsiva funcionar
+  const containerClass = "bg-white min-h-[1056px] w-[800px] shadow-2xl mx-auto overflow-hidden text-left";
+
   const renderClassic = () => (
-    <div id={containerId} className="bg-white p-12 min-h-[1056px] text-slate-800 leading-relaxed max-w-[800px] mx-auto">
+    <div id={containerId} className={`${containerClass} p-12 text-slate-800 leading-relaxed`}>
       <div className="border-b-2 border-slate-900 pb-6 mb-8 flex justify-between items-start">
         <div className="flex-1">
           <h1 className="text-4xl font-serif font-bold tracking-tight uppercase">{fullName || 'Seu Nome'}</h1>
@@ -71,7 +75,7 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   );
 
   const renderModern = () => (
-    <div id={containerId} className="bg-white min-h-[1056px] text-slate-800 flex max-w-[800px] mx-auto overflow-hidden">
+    <div id={containerId} className={`${containerClass} flex`}>
       <div className="w-1/3 bg-slate-900 text-slate-100 p-8 flex flex-col gap-8">
         <div className="flex flex-col items-center gap-4">
           {photoUrl ? (
@@ -86,7 +90,6 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
             <p className="text-slate-400 text-sm">{jobTitle}</p>
           </div>
         </div>
-
         <section>
           <h2 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4">Contato</h2>
           <div className="flex flex-col gap-3 text-sm text-slate-300">
@@ -95,7 +98,6 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
              <div className="flex items-center gap-2"><MapPin size={14} className="text-slate-500" /> {contact.location}</div>
           </div>
         </section>
-
         <section>
           <h2 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4">Habilidades</h2>
           <div className="flex flex-wrap gap-2">
@@ -105,14 +107,12 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
           </div>
         </section>
       </div>
-
       <div className="flex-1 p-10 bg-slate-50">
-        <section className="mb-10">
+        <section className="mb-10 text-left">
           <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 border-b pb-1">Perfil</h2>
           <p className="text-sm text-slate-600 leading-relaxed">{summary}</p>
         </section>
-
-        <section className="mb-10">
+        <section className="mb-10 text-left">
           <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 border-b pb-1">Experiência</h2>
           {experiences.map((exp, i) => (
             <div key={i} className="mb-6 relative pl-4 border-l-2 border-blue-100">
@@ -126,8 +126,7 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
             </div>
           ))}
         </section>
-
-        <section>
+        <section className="text-left">
           <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 border-b pb-1">Educação</h2>
           {education.map((edu, i) => (
             <div key={i} className="mb-4">
@@ -141,9 +140,8 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   );
 
   const renderCreative = () => (
-    <div id={containerId} className="bg-white p-12 min-h-[1056px] text-slate-800 max-w-[800px] mx-auto relative overflow-hidden">
+    <div id={containerId} className={`${containerClass} p-12 relative`}>
       <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 -z-0" />
-      
       <header className="relative z-10 mb-12 flex items-center gap-8">
         {photoUrl && <img src={photoUrl} className="w-32 h-32 rounded-2xl rotate-3 shadow-xl object-cover" alt="Profile" />}
         <div>
@@ -156,15 +154,13 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
           </div>
         </div>
       </header>
-
       <div className="grid grid-cols-12 gap-10 relative z-10">
         <div className="col-span-8">
-          <section className="mb-10">
+          <section className="mb-10 text-left">
             <h2 className="text-2xl font-black text-indigo-900 mb-4 inline-block border-b-4 border-indigo-200">Sobre Mim</h2>
             <p className="text-slate-600">{summary}</p>
           </section>
-
-          <section>
+          <section className="text-left">
             <h2 className="text-2xl font-black text-indigo-900 mb-6 inline-block border-b-4 border-indigo-200">Trajetória</h2>
             {experiences.map((exp, i) => (
               <div key={i} className="mb-8 group">
@@ -178,8 +174,7 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
             ))}
           </section>
         </div>
-
-        <div className="col-span-4 flex flex-col gap-10">
+        <div className="col-span-4 flex flex-col gap-10 text-left">
           <section>
             <h2 className="text-xl font-black text-indigo-900 mb-4">Skills</h2>
             <div className="flex flex-col gap-2">
@@ -187,13 +182,12 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
                 <div key={i} className="flex flex-col">
                   <span className="text-xs font-bold text-slate-700">{skill}</span>
                   <div className="w-full h-1.5 bg-slate-100 rounded-full mt-1">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.random() * 40 + 60}%` }} />
+                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${60 + (i * 5) % 40}%` }} />
                   </div>
                 </div>
               ))}
             </div>
           </section>
-
           <section>
             <h2 className="text-xl font-black text-indigo-900 mb-4">Educação</h2>
             {education.map((edu, i) => (
@@ -210,7 +204,7 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   );
 
   const renderMinimalist = () => (
-    <div id={containerId} className="bg-white p-16 min-h-[1056px] text-slate-900 max-w-[800px] mx-auto font-light">
+    <div id={containerId} className={`${containerClass} p-16 font-light`}>
       <header className="text-center border-b border-slate-200 pb-10 mb-10">
         <h1 className="text-4xl tracking-[0.2em] uppercase mb-3">{fullName}</h1>
         <p className="text-sm tracking-widest text-slate-500 uppercase mb-6">{jobTitle}</p>
@@ -220,12 +214,10 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
            {contact.location && <span>{contact.location}</span>}
         </div>
       </header>
-
       <section className="mb-10 text-center max-w-lg mx-auto">
         <p className="leading-relaxed text-slate-600">{summary}</p>
       </section>
-
-      <div className="grid grid-cols-1 gap-12">
+      <div className="grid grid-cols-1 gap-12 text-left">
         <section>
           <h2 className="text-xs font-bold uppercase tracking-widest text-center mb-8 text-slate-400">Experiência</h2>
           {experiences.map((exp, i) => (
@@ -241,7 +233,6 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
             </div>
           ))}
         </section>
-
         <section>
              <h2 className="text-xs font-bold uppercase tracking-widest text-center mb-8 text-slate-400">Skills & Educação</h2>
              <div className="flex flex-wrap justify-center gap-3 mb-8">
@@ -263,8 +254,8 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   );
 
   const renderExecutive = () => (
-    <div id={containerId} className="bg-white min-h-[1056px] text-slate-800 max-w-[800px] mx-auto">
-       <header className="bg-slate-800 text-white p-12">
+    <div id={containerId} className={`${containerClass}`}>
+       <header className="bg-slate-800 text-white p-12 text-left">
           <div className="flex justify-between items-end">
              <div>
                 <h1 className="text-4xl font-serif font-bold mb-2">{fullName}</h1>
@@ -278,7 +269,7 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
           </div>
        </header>
        <div className="p-12 grid grid-cols-3 gap-10">
-          <div className="col-span-2">
+          <div className="col-span-2 text-left">
              <section className="mb-8">
                 <h2 className="font-serif font-bold text-xl text-slate-800 mb-4 border-b-2 border-slate-800 pb-2">Perfil</h2>
                 <p className="text-slate-600 leading-relaxed">{summary}</p>
@@ -297,7 +288,7 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
                 ))}
              </section>
           </div>
-          <div className="col-span-1 bg-slate-50 p-6 rounded-lg h-fit">
+          <div className="col-span-1 bg-slate-50 p-6 rounded-lg h-fit text-left">
               <section className="mb-8">
                  <h2 className="font-bold uppercase tracking-wider text-sm mb-4 text-slate-800">Educação</h2>
                  {education.map((edu, i) => (
@@ -322,8 +313,8 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   );
 
   const renderTech = () => (
-     <div id={containerId} className="bg-slate-900 min-h-[1056px] text-slate-300 font-mono max-w-[800px] mx-auto p-10">
-        <header className="border-b border-green-500/30 pb-8 mb-8 flex justify-between items-start">
+     <div id={containerId} className={`${containerClass} bg-slate-900 text-slate-300 font-mono p-10`}>
+        <header className="border-b border-green-500/30 pb-8 mb-8 flex justify-between items-start text-left">
            <div>
               <h1 className="text-4xl font-bold text-green-400 mb-2">{`{ ${fullName} }`}</h1>
               <p className="text-xl text-white">{`> ${jobTitle}`}</p>
@@ -334,14 +325,12 @@ const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
               <div>{contact.phone}</div>
            </div>
         </header>
-        
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-12 gap-8 text-left">
            <div className="col-span-8">
               <section className="mb-8">
                  <h2 className="text-green-400 font-bold mb-4">/* RESUMO */</h2>
                  <p className="text-sm leading-relaxed text-slate-400">{summary}</p>
               </section>
-
               <section>
                  <h2 className="text-green-400 font-bold mb-6">/* EXPERIÊNCIA */</h2>
                  {experiences.map((exp, i) => (
