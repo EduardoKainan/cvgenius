@@ -5,6 +5,7 @@ import {
   Download, Image as ImageIcon, Sparkles, RefreshCw, Trash2, Plus, 
   LayoutTemplate, Check, AlertCircle, X, DownloadCloud, File, FileImage
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { AppState, ResumeData, TemplateType } from './types';
 import { extractResumeData, improveResumeText, processProfessionalPhoto } from './services/geminiService';
 import TemplateRenderer from './components/TemplateRenderer';
@@ -158,7 +159,6 @@ const App: React.FC = () => {
   };
 
   const exportAsImage = async () => {
-    const html2canvas = (await import('https://esm.sh/html2canvas')).default;
     const element = document.getElementById('final-resume');
     if (element) {
       const canvas = await html2canvas(element, { scale: 2, useCORS: true });
