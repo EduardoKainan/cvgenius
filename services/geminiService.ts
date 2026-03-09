@@ -3,7 +3,18 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { ResumeData } from "../types";
 
 // Fixed: Strictly following GoogleGenAI guidelines for client initialization
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI;
+
+function getAI() {
+  if (!ai) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not set");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+}
 
 const RESUME_SCHEMA = {
   type: Type.OBJECT,
@@ -48,6 +59,7 @@ const RESUME_SCHEMA = {
 };
 
 export async function extractResumeData(input: { text?: string; image?: string; audio?: string; audioMimeType?: string }): Promise<ResumeData> {
+  const ai = getAI();
   const model = "gemini-3-flash-preview";
   let contents: any[] = [];
 
@@ -88,6 +100,7 @@ export async function extractResumeData(input: { text?: string; image?: string; 
 }
 
 export async function improveResumeText(data: ResumeData, tone: string): Promise<ResumeData> {
+  const ai = getAI();
   const model = "gemini-3-flash-preview";
   const prompt = `Rewrite the following resume data to be more professional, impact-oriented, and following a ${tone} tone. Keep the same structure. Data: ${JSON.stringify(data)}`;
 
@@ -104,6 +117,7 @@ export async function improveResumeText(data: ResumeData, tone: string): Promise
 }
 
 export async function processProfessionalPhoto(base64Image: string): Promise<string> {
+  const ai = getAI();
   const model = "gemini-2.5-flash-image";
   const response = await ai.models.generateContent({
     model,
