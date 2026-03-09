@@ -13,8 +13,8 @@ interface Props {
 const TemplateRenderer: React.FC<Props> = ({ data, template, containerId }) => {
   const { fullName, jobTitle, summary, experiences, education, skills, contact, photoUrl } = data;
 
-  // Largura fixa de 800px é fundamental para o export e para a escala responsiva funcionar
-  const containerClass = "bg-white min-h-[1056px] w-[800px] shadow-2xl mx-auto overflow-hidden text-left";
+  // Largura fixa de 794px e altura mínima de 1123px para formato A4 (96 DPI)
+  const containerClass = "bg-white min-h-[1123px] w-[794px] shadow-2xl mx-auto overflow-hidden text-left";
 
   const renderClassic = () => (
     <div id={containerId} className={`${containerClass} p-12 text-slate-800 leading-relaxed`}>

@@ -6,6 +6,7 @@ import { ResumeData } from '../types';
 
 interface LandingPageProps {
   onStart: () => void;
+  onLogin: () => void;
 }
 
 const MOCK_RESUME: ResumeData = {
@@ -97,7 +98,7 @@ const testimonials = [
   }
 ];
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* Navbar */}
@@ -109,7 +110,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           <span className="text-2xl font-bold tracking-tight">CVGenius</span>
         </div>
         <button 
-          onClick={onStart}
+          onClick={onLogin}
           className="px-6 py-2.5 rounded-full font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
         >
           Entrar

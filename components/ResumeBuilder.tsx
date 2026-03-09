@@ -7,7 +7,9 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { AppState, ResumeData, TemplateType, Experience } from '../types';
+import { jsPDF } from 'jspdf';
 import { extractResumeData, improveResumeText, processProfessionalPhoto } from '../services/geminiService';
+import { generateDocx } from '../services/docxService';
 import TemplateRenderer from './TemplateRenderer';
 import StepIndicator from './StepIndicator';
 import { supabase } from '../lib/supabase';
@@ -24,14 +26,21 @@ const INITIAL_RESUME: ResumeData = {
   length: 'full'
 };
 
-const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const ResumeBuilder: React.FC<{ 
+  onBack: () => void;
+  initialResumeId?: string;
+  initialResumeData?: ResumeData;
+}> = ({ onBack, initialResumeId, initialResumeData }) => {
   const [state, setState] = useState<AppState>({
-    currentStep: 1,
-    resumeData: INITIAL_RESUME,
+    currentStep: initialResumeData ? 2 : 1,
+    resumeData: initialResumeData || INITIAL_RESUME,
     template: 'modern',
     isProcessing: false,
     processingMessage: ''
   });
+
+  const [resumeId, setResumeId] = useState<string | undefined>(initialResumeId);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [inputMode, setInputMode] = useState<'text' | 'image' | 'audio'>('text');
   const [inputText, setInputText] = useState('');
@@ -46,13 +55,15 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [credits, setCredits] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [exportAction, setExportAction] = useState<'png' | 'pdf' | null>(null);
+  const [exportAction, setExportAction] = useState<'png' | 'pdf' | 'docx' | null>(null);
+  const [authAction, setAuthAction] = useState<'export' | 'save' | null>(null);
   
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
 
   // Check session on mount
   useEffect(() => {
@@ -114,15 +125,58 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     };
   }, [user, showPaymentModal, exportAction]);
 
+  const checkPaymentStatus = async () => {
+    if (!user) return;
+    setIsCheckingPayment(true);
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('credits')
+        .eq('id', user.id)
+        .single();
+      
+      if (data && data.credits > 0) {
+        setCredits(data.credits);
+        if (showPaymentModal) {
+          setShowPaymentModal(false);
+          if (exportAction) {
+            executeExport(exportAction);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao verificar créditos:", err);
+    } finally {
+      setIsCheckingPayment(false);
+    }
+  };
+
+  // Polling fallback for free tier Supabase (if Realtime is not enabled)
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showPaymentModal && user) {
+      // Check every 5 seconds while modal is open
+      interval = setInterval(() => {
+        checkPaymentStatus();
+      }, 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showPaymentModal, user, exportAction]);
+
   const handleAuth = async () => {
     setAuthError('');
     setAuthLoading(true);
     try {
       if (authMode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
+        const { data, error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
         if (error) throw error;
-        // Auto sign-in might happen, or we might need to wait for email confirmation depending on Supabase settings.
-        // Assuming auto sign-in for MVP:
+        if (data.user && !data.session) {
+          setAuthError('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
+          setAuthLoading(false);
+          return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
         if (error) throw error;
@@ -132,11 +186,16 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       // The useEffect will catch the user change and fetch credits.
       // We need a slight delay to let credits fetch, or we check in the export handler.
       setTimeout(() => {
-        if (credits < 1) {
-          setShowPaymentModal(true);
-        } else if (exportAction) {
-          executeExport(exportAction);
+        if (authAction === 'export') {
+          if (credits < 1) {
+            setShowPaymentModal(true);
+          } else if (exportAction) {
+            executeExport(exportAction);
+          }
+        } else if (authAction === 'save') {
+          saveResume();
         }
+        setAuthAction(null);
       }, 1000);
 
     } catch (err: any) {
@@ -259,7 +318,7 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
-  const executeExport = async (type: 'png' | 'pdf') => {
+  const executeExport = async (type: 'png' | 'pdf' | 'docx') => {
     const element = document.getElementById('resume-final-render');
     if (!element || !user) return;
     
@@ -270,11 +329,40 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       await supabase.from('profiles').update({ credits: newCredits }).eq('id', user.id);
       setCredits(newCredits);
 
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-      const link = document.createElement('a');
-      link.download = `curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.${type}`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      if (type === 'docx') {
+        await generateDocx(state.resumeData);
+      } else if (type === 'pdf') {
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        let heightLeft = imgHeight;
+        let position = 0;
+        
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+        
+        while (heightLeft > 0) {
+          position = position - pdfHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
+        
+        pdf.save(`curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+      } else {
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+        const link = document.createElement('a');
+        link.download = `curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.${type}`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
     } catch (error) {
       console.error(error);
       alert("Erro ao exportar. Tente novamente.");
@@ -284,9 +372,10 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
-  const handleExportClick = (type: 'png' | 'pdf') => {
+  const handleExportClick = (type: 'png' | 'pdf' | 'docx') => {
     if (!isLoggedIn) {
       setExportAction(type);
+      setAuthAction('export');
       setShowAuthModal(true);
       return;
     }
@@ -306,6 +395,56 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       ...prev,
       resumeData: { ...prev.resumeData, experiences: [...prev.resumeData.experiences, newExp] }
     }));
+  };
+
+  const saveResume = async () => {
+    if (!user) {
+      setAuthAction('save');
+      setShowAuthModal(true);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const title = state.resumeData.jobTitle 
+        ? `${state.resumeData.fullName} - ${state.resumeData.jobTitle}` 
+        : state.resumeData.fullName || 'Meu Currículo';
+        
+      if (resumeId) {
+        // Update existing
+        const { error } = await supabase
+          .from('resumes')
+          .update({
+            title,
+            data: state.resumeData,
+            template: state.template
+          })
+          .eq('id', resumeId);
+        if (error) throw error;
+        alert('Currículo atualizado com sucesso!');
+      } else {
+        // Create new
+        const { data, error } = await supabase
+          .from('resumes')
+          .insert({
+            user_id: user.id,
+            title,
+            data: state.resumeData,
+            template: state.template
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) {
+          setResumeId(data.id);
+          alert('Currículo salvo com sucesso!');
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao salvar currículo:', err);
+      alert('Erro ao salvar currículo.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -427,12 +566,21 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center gap-4 justify-center max-w-md mx-auto">
-              <RefreshCw size={24} className="text-blue-600 animate-spin" />
-              <div className="text-left">
-                <p className="text-sm font-bold text-slate-700">Aguardando Pagamento...</p>
-                <p className="text-xs text-slate-500">Após o pagamento, esta tela fechará automaticamente e seu download iniciará.</p>
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col items-center gap-4 justify-center max-w-md mx-auto">
+              <div className="flex items-center gap-4">
+                <RefreshCw size={24} className={`text-blue-600 ${isCheckingPayment ? 'animate-spin' : ''}`} />
+                <div className="text-left">
+                  <p className="text-sm font-bold text-slate-700">Aguardando Pagamento...</p>
+                  <p className="text-xs text-slate-500">Verificando automaticamente a cada 5 segundos.</p>
+                </div>
               </div>
+              <button 
+                onClick={checkPaymentStatus}
+                disabled={isCheckingPayment}
+                className="w-full py-2 mt-2 bg-blue-100 text-blue-700 font-bold rounded-xl hover:bg-blue-200 transition-colors text-sm disabled:opacity-50"
+              >
+                {isCheckingPayment ? 'Verificando...' : 'Já paguei, verificar agora'}
+              </button>
             </div>
           </div>
         </div>
@@ -443,10 +591,20 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <button 
           onClick={onBack}
           className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-          title="Voltar para a Home"
+          title="Voltar"
         >
           <ArrowLeft size={24} />
         </button>
+        
+        {isLoggedIn && (
+          <button 
+            onClick={onBack}
+            className="absolute right-0 top-1/2 -translate-y-1/2 px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors flex items-center gap-2"
+          >
+            <User size={18} /> Minha Conta
+          </button>
+        )}
+
         <div className="flex justify-center mb-4">
           <div className="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-200">
             <Sparkles className="text-white" size={32} />
@@ -739,6 +897,16 @@ const ResumeBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     </button>
                     <button onClick={() => handleExportClick('pdf')} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg">
                        <File size={20} /> Exportar PDF
+                    </button>
+                    <button onClick={() => handleExportClick('docx')} className="w-full py-4 bg-blue-100 text-blue-800 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-200 transition-all shadow-lg">
+                       <FileText size={20} /> Exportar DOCX
+                    </button>
+                    <button 
+                      onClick={saveResume} 
+                      disabled={isSaving}
+                      className="w-full py-4 border border-blue-200 text-blue-600 bg-blue-50 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors disabled:opacity-50 mt-4"
+                    >
+                       <FileText size={20} /> {isSaving ? 'Salvando...' : 'Salvar na Nuvem'}
                     </button>
                  </div>
 
