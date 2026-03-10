@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Sparkles, Check, ArrowRight, Star, FileText, Zap, Shield, CheckCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Check, ArrowRight, Star, FileText, Zap, Shield, CheckCheck, X } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
 import { ResumeData } from '../types';
 
@@ -98,7 +98,53 @@ const testimonials = [
   }
 ];
 
+const ScaledPreview: React.FC<{ templateId: string, maxScale?: number }> = ({ templateId, maxScale }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [height, setHeight] = useState(1123);
+
+  React.useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current && contentRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        let newScale = containerWidth / 794;
+        if (maxScale && newScale > maxScale) {
+          newScale = maxScale;
+        }
+        setScale(newScale);
+        
+        // Use a small timeout to let the content render and get its actual height
+        setTimeout(() => {
+          if (contentRef.current) {
+            const contentHeight = contentRef.current.offsetHeight;
+            setHeight(contentHeight * newScale);
+          }
+        }, 50);
+      }
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [templateId, maxScale]);
+
+  return (
+    <div ref={containerRef} className="w-full relative overflow-hidden rounded-sm shadow-md flex justify-center" style={{ height: `${height}px` }}>
+      <div 
+        ref={contentRef}
+        className="absolute top-0 origin-top pointer-events-none" 
+        style={{ transform: `scale(${scale})`, width: '794px' }}
+      >
+        <TemplateRenderer data={MOCK_RESUME} template={templateId as any} containerId={`mock-${templateId}`} />
+      </div>
+    </div>
+  );
+};
+
 const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
+  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* Navbar */}
@@ -187,12 +233,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             {templatesList.map((tpl) => (
-              <div key={tpl.id} className="group cursor-pointer" onClick={onStart}>
+              <div key={tpl.id} className="group cursor-pointer" onClick={() => setPreviewTemplate(tpl.id)}>
                 <div className="bg-slate-50 p-6 rounded-3xl mb-4 border border-slate-100 group-hover:border-blue-200 group-hover:shadow-xl group-hover:shadow-blue-100 transition-all duration-300">
-                  <div className="shadow-md rounded-sm overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-300 border border-slate-200/50 relative w-full pt-[141.4%]" style={{ containerType: 'inline-size' }}>
-                    <div className="absolute top-0 left-0 w-[800px] origin-top-left pointer-events-none" style={{ transform: 'scale(calc(100cqw / 800))' }}>
-                      <TemplateRenderer data={MOCK_RESUME} template={tpl.id as any} containerId={`mock-${tpl.id}`} />
-                    </div>
+                  <div className="transform group-hover:-translate-y-2 transition-transform duration-300 border border-slate-200/50 w-full">
+                    <ScaledPreview templateId={tpl.id} />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -355,6 +399,40 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
       <footer className="bg-slate-50 py-12 border-t border-slate-200 text-center text-slate-500 text-sm">
         <p>&copy; {new Date().getFullYear()} CVGenius. Todos os direitos reservados.</p>
       </footer>
+
+      {/* Template Preview Modal */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm" onClick={() => setPreviewTemplate(null)}>
+          <div className="bg-slate-100 rounded-3xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-4 lg:p-6 bg-white border-b border-slate-200">
+              <h3 className="text-xl font-bold text-slate-900">
+                {templatesList.find(t => t.id === previewTemplate)?.name}
+              </h3>
+              <button 
+                onClick={() => setPreviewTemplate(null)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 lg:p-8 flex justify-center bg-slate-200">
+              <div className="w-full max-w-[794px]">
+                <ScaledPreview templateId={previewTemplate} maxScale={1} />
+              </div>
+            </div>
+
+            <div className="p-4 lg:p-6 bg-white border-t border-slate-200 flex justify-end">
+              <button 
+                onClick={onStart}
+                className="px-8 py-3 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 flex items-center gap-2"
+              >
+                Usar este modelo <ArrowRight size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
