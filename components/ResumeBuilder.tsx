@@ -331,37 +331,57 @@ const ResumeBuilder: React.FC<{
 
       if (type === 'docx') {
         await generateDocx(state.resumeData);
-      } else if (type === 'pdf') {
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        
-        let heightLeft = imgHeight;
-        let position = 0;
-        
-        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
-        
-        while (heightLeft > 0) {
-          position = position - pdfHeight;
-          pdf.addPage();
+      } else {
+        const html2canvasOptions = {
+          scale: 2,
+          useCORS: true,
+          windowWidth: 1200,
+          onclone: (clonedDoc: Document) => {
+            const el = clonedDoc.getElementById('resume-final-render');
+            if (el) {
+              let currentParent = el.parentElement;
+              while (currentParent && currentParent !== clonedDoc.body) {
+                currentParent.style.overflow = 'visible';
+                currentParent.style.height = 'auto';
+                currentParent.style.transform = 'none';
+                currentParent = currentParent.parentElement;
+              }
+            }
+          }
+        };
+
+        if (type === 'pdf') {
+          const canvas = await html2canvas(element, html2canvasOptions);
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
+          
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          
+          const imgProps = pdf.getImageProperties(imgData);
+          const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          
+          let heightLeft = imgHeight;
+          let position = 0;
+          
           pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
           heightLeft -= pdfHeight;
+          
+          while (heightLeft > 0) {
+            position = position - pdfHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+            heightLeft -= pdfHeight;
+          }
+          
+          pdf.save(`curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+        } else {
+          const canvas = await html2canvas(element, html2canvasOptions);
+          const link = document.createElement('a');
+          link.download = `curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.${type}`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
         }
-        
-        pdf.save(`curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.pdf`);
-      } else {
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-        const link = document.createElement('a');
-        link.download = `curriculo-${state.resumeData.fullName.replace(/\s+/g, '-').toLowerCase()}.${type}`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
       }
     } catch (error) {
       console.error(error);
