@@ -12,34 +12,46 @@ interface LandingPageProps {
 const MOCK_RESUME: ResumeData = {
   fullName: 'Alexandre Silva',
   jobTitle: 'Desenvolvedor Full Stack',
-  summary: 'Especialista em criar soluções web escaláveis com 5 anos de experiência em React, Node.js e arquitetura em nuvem. Foco em performance e experiência do usuário.',
+  summary: 'Especialista em criar soluções web escaláveis com 5 anos de experiência em React, Node.js e arquitetura em nuvem. Foco em performance e experiência do usuário. Apaixonado por código limpo e metodologias ágeis, com histórico comprovado de entrega de projetos complexos no prazo.',
   contact: {
     email: 'alexandre.silva@email.com',
     phone: '(11) 98765-4321',
-    location: 'São Paulo, SP'
+    location: 'São Paulo, SP',
+    linkedin: 'linkedin.com/in/alexandresilva'
   },
   experiences: [
     {
       company: 'Tech Solutions SA',
       position: 'Engenheiro de Software Sênior',
       period: '2020 - Presente',
-      description: 'Liderou a migração de monólito para microsserviços, reduzindo o tempo de carregamento em 40%.'
+      description: 'Liderou a migração de um monólito legado para uma arquitetura de microsserviços utilizando Node.js e Docker, reduzindo o tempo de carregamento em 40% e os custos de infraestrutura em 25%. Mentoria de desenvolvedores juniores e implementação de CI/CD.'
     },
     {
       company: 'InovaWeb',
-      position: 'Desenvolvedor Front-end',
+      position: 'Desenvolvedor Front-end Pleno',
       period: '2018 - 2020',
-      description: 'Desenvolvimento de interfaces responsivas e acessíveis utilizando React e Tailwind CSS.'
+      description: 'Desenvolvimento de interfaces responsivas e acessíveis utilizando React, Redux e Tailwind CSS. Aumento de 30% na conversão de usuários após o redesign do fluxo de checkout. Integração com APIs RESTful e GraphQL.'
+    },
+    {
+      company: 'Agência Digital X',
+      position: 'Desenvolvedor Web Júnior',
+      period: '2016 - 2018',
+      description: 'Criação de landing pages e e-commerces usando WordPress e JavaScript puro. Otimização de SEO e performance web.'
     }
   ],
   education: [
     {
       institution: 'Universidade de São Paulo (USP)',
-      degree: 'Ciência da Computação',
+      degree: 'Bacharelado em Ciência da Computação',
       year: '2014 - 2018'
+    },
+    {
+      institution: 'Tech Academy',
+      degree: 'Bootcamp Arquitetura Cloud (AWS)',
+      year: '2019'
     }
   ],
-  skills: ['React', 'TypeScript', 'Node.js', 'AWS', 'Docker', 'UI/UX'],
+  skills: ['React', 'TypeScript', 'Node.js', 'AWS', 'Docker', 'UI/UX', 'GraphQL', 'CI/CD', 'Jest', 'PostgreSQL'],
   tone: 'modern',
   length: 'full'
 };
@@ -117,7 +129,7 @@ const ScaledPreview: React.FC<{ templateId: string, maxScale?: number }> = ({ te
         // Use a small timeout to let the content render and get its actual height
         setTimeout(() => {
           if (contentRef.current) {
-            const contentHeight = contentRef.current.offsetHeight;
+            const contentHeight = Math.max(contentRef.current.offsetHeight, 1123);
             setHeight(contentHeight * newScale);
           }
         }, 50);
@@ -164,14 +176,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
       </nav>
 
       {/* Hero Section */}
-      <header className="max-w-7xl mx-auto px-6 pt-12 pb-24 lg:pt-24 lg:pb-32 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-semibold text-sm mb-8 border border-blue-100">
+      <header className="max-w-7xl mx-auto px-6 pt-4 pb-24 lg:pt-8 lg:pb-32 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-semibold text-sm mb-6 border border-blue-100">
           <Star size={16} className="fill-blue-700" />
           <span>Mais de 10.000 currículos gerados</span>
         </div>
-        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 max-w-4xl mx-auto leading-[1.1]">
+        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-10 max-w-4xl mx-auto leading-[1.1]">
           Crie seu Currículo Profissional em <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Minutos com IA</span>
         </h1>
+
+        {/* VSL Video */}
+        <div className="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-slate-200 bg-slate-900 mb-10">
+          {/* @ts-ignore */}
+          <wistia-player media-id="tkdrqypnx7" aspect="1.7777777777777777"></wistia-player>
+        </div>
+
         <p className="text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed">
           Aumente suas chances de contratação com um currículo otimizado, moderno e aprovado por recrutadores. Teste grátis agora mesmo.
         </p>
