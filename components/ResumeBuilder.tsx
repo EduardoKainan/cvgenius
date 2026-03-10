@@ -537,7 +537,7 @@ const ResumeBuilder: React.FC<{
                   <li className="flex items-center gap-2"><Check size={16} className="text-emerald-500"/> Atualize quando quiser</li>
                 </ul>
                 <a 
-                  href={`#COLOQUE_O_LINK_DO_PLANO_2_AQUI?email=${user?.email || ''}`}
+                  href={`https://ggcheckout.com.br/checkout/v2/dXZKYMIyLt9VWB7tPx5t?email=${user?.email || ''}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors text-center flex items-center justify-center gap-2"
@@ -556,7 +556,7 @@ const ResumeBuilder: React.FC<{
                   <li className="flex items-center gap-2"><Check size={16} className="text-emerald-500"/> Teste vários templates</li>
                 </ul>
                 <a 
-                  href={`#COLOQUE_O_LINK_DO_PLANO_3_AQUI?email=${user?.email || ''}`}
+                  href={`https://ggcheckout.com.br/checkout/v2/Yw3BSsT0tsbdIEeL4smt?email=${user?.email || ''}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-slate-100 text-slate-800 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors text-center flex items-center justify-center gap-2"
