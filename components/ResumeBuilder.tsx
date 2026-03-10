@@ -807,7 +807,7 @@ const ResumeBuilder: React.FC<{
 
           <div className="hidden lg:block sticky top-8">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Preview em Tempo Real</h3>
-            <div className="cv-viewport bg-slate-200 rounded-3xl p-8 border border-slate-100 overflow-hidden shadow-inner">
+            <div className="cv-viewport bg-slate-200 rounded-3xl p-8 border border-slate-100 overflow-hidden shadow-inner flex justify-center">
                <div className="cv-scaler">
                 <TemplateRenderer data={state.resumeData} template={state.template} containerId="preview-render" />
                </div>
@@ -916,8 +916,8 @@ const ResumeBuilder: React.FC<{
               </div>
 
               <div className="flex-1 w-full bg-slate-200 p-4 lg:p-12 rounded-[2rem] shadow-inner flex justify-center overflow-hidden">
-                <div className="cv-viewport">
-                  <div className="cv-scaler">
+                <div className="cv-viewport cv-viewport-large flex justify-center">
+                  <div className="cv-scaler cv-scaler-large">
                     <TemplateRenderer data={state.resumeData} template={state.template} containerId="resume-final-render" />
                   </div>
                 </div>

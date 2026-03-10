@@ -24,16 +24,35 @@
             transform-origin: top center;
             width: 800px;
             flex-shrink: 0;
+            /* Default scale for desktop to fit within the container */
+            transform: scale(0.6);
         }
 
-        @media (max-width: 840px) {
-            .cv-scaler {
-                /* Calcula a escala baseada na largura da tela (com margem de 32px) */
-                transform: scale(calc((100vw - 32px) / 800));
-            }
+        .cv-scaler-large {
+            transform-origin: top center;
+            width: 800px;
+            flex-shrink: 0;
+            /* Larger scale for desktop in step 4 */
+            transform: scale(0.8);
+        }
+
+        @media (min-width: 1024px) {
             .cv-viewport {
+                height: calc(1131px * 0.6); /* 800 * 1.414 (A4 ratio) * 0.6 */
+            }
+            .cv-viewport-large {
+                height: calc(1131px * 0.8); /* 800 * 1.414 (A4 ratio) * 0.8 */
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .cv-scaler, .cv-scaler-large {
+                /* Calcula a escala baseada na largura da tela (com margem de 64px para não colar nas bordas) */
+                transform: scale(calc((100vw - 64px) / 800));
+            }
+            .cv-viewport, .cv-viewport-large {
                 /* Ajusta a altura do container pai para não sobrar buraco branco embaixo devido ao transform */
-                height: calc(1056px * ((100vw - 32px) / 800));
+                height: calc(1131px * ((100vw - 64px) / 800));
             }
         }
     </style>
