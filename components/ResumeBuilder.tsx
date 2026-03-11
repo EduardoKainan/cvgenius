@@ -14,6 +14,52 @@ import TemplateRenderer from './TemplateRenderer';
 import StepIndicator from './StepIndicator';
 import { supabase } from '../lib/supabase';
 
+const ResponsivePreview: React.FC<{ data: ResumeData; template: TemplateType; containerId: string }> = ({ data, template, containerId }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [height, setHeight] = useState(1131);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const newScale = containerRef.current.clientWidth / 800;
+        setScale(newScale < 1 ? newScale : 1);
+      }
+      if (contentRef.current) {
+        setHeight(contentRef.current.clientHeight);
+      }
+    };
+
+    updateDimensions();
+
+    const observer = new ResizeObserver(() => {
+      updateDimensions();
+    });
+    
+    if (containerRef.current) observer.observe(containerRef.current);
+    if (contentRef.current) observer.observe(contentRef.current);
+    
+    return () => observer.disconnect();
+  }, [data, template]);
+
+  return (
+    <div ref={containerRef} className="w-full flex justify-center overflow-hidden transition-all duration-300" style={{ height: height * scale }}>
+      <div 
+        ref={contentRef} 
+        style={{ 
+          transform: `scale(${scale})`, 
+          transformOrigin: 'top center', 
+          width: '800px', 
+          flexShrink: 0 
+        }}
+      >
+        <TemplateRenderer data={data} template={template} containerId={containerId} />
+      </div>
+    </div>
+  );
+};
+
 const INITIAL_RESUME: ResumeData = {
   fullName: '',
   jobTitle: '',
@@ -471,9 +517,10 @@ const ResumeBuilder: React.FC<{
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Auth Modal */}
       {showAuthModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full relative">
-            <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">✕</button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4">
+            <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full relative">
+              <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">✕</button>
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Lock size={32} />
             </div>
@@ -514,13 +561,15 @@ const ResumeBuilder: React.FC<{
             </div>
           </div>
         </div>
+        </div>
       )}
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-4xl w-full relative">
-            <button onClick={() => setShowPaymentModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">✕</button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4">
+            <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-4xl w-full relative">
+              <button onClick={() => setShowPaymentModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">✕</button>
             
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold mb-2">Escolha seu Pacote</h2>
@@ -603,6 +652,7 @@ const ResumeBuilder: React.FC<{
               </button>
             </div>
           </div>
+        </div>
         </div>
       )}
 
@@ -827,10 +877,8 @@ const ResumeBuilder: React.FC<{
 
           <div className="hidden lg:block sticky top-8">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Preview em Tempo Real</h3>
-            <div className="cv-viewport bg-slate-200 rounded-3xl p-8 border border-slate-100 overflow-hidden shadow-inner flex justify-center">
-               <div className="cv-scaler">
-                <TemplateRenderer data={state.resumeData} template={state.template} containerId="preview-render" />
-               </div>
+            <div className="bg-slate-200 rounded-3xl p-8 border border-slate-100 shadow-inner">
+               <ResponsivePreview data={state.resumeData} template={state.template} containerId="preview-render" />
             </div>
           </div>
           
@@ -935,12 +983,8 @@ const ResumeBuilder: React.FC<{
                  </button>
               </div>
 
-              <div className="flex-1 w-full bg-slate-200 p-4 lg:p-12 rounded-[2rem] shadow-inner flex justify-center overflow-hidden">
-                <div className="cv-viewport cv-viewport-large flex justify-center">
-                  <div className="cv-scaler cv-scaler-large">
-                    <TemplateRenderer data={state.resumeData} template={state.template} containerId="resume-final-render" />
-                  </div>
-                </div>
+              <div className="flex-1 w-full bg-slate-200 p-4 lg:p-12 rounded-[2rem] shadow-inner">
+                <ResponsivePreview data={state.resumeData} template={state.template} containerId="resume-final-render" />
               </div>
            </div>
         </div>
